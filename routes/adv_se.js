@@ -24,7 +24,7 @@ router.post('/', function (req, res) {
     }
 
     var openi_req = https.request({
-            host: 'openi-platform.velti.com',
+            host: '127.0.0.1',
             port: 443,
             path: "/api/v1/search?" + query[1],
             method: 'GET',
