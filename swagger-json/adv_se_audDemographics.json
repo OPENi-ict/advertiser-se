@@ -1,0 +1,103 @@
+{
+    "apiVersion"      : "1.0.0",
+    "swaggerVersion"  : "1.2",
+    "basePath"        : "adv_se",
+    "resourcePath"    : "advse-swagger/adv_se",
+    "produces": [
+        "application/Json"
+    ],
+    "apis": [
+        {
+            "path": "/audDemographics",
+            "operations": [
+                {
+                    "method"     : "POST",
+                    "summary"    : "Find number of Cloudlets that meet your creteria",
+                    "notes"      : "Computes the number of unique Cloudlets that meet the search (audMng) creteria and responses with the requested demographics",
+                    "type"       : "ADV_SE_Response",
+                    "responseClass" : "ADV_SE_Response",
+                    "nickname"   : "audienceDemographics",
+                    "parameters" : [
+                        {
+                            "name"        : "body",
+                            "description" : "Audience management creteria",
+                            "required"    : true,
+                            "type"        : "ADV_SE_Object",
+                            "paramType"   : "body"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Request Error",
+                            "responseModel": "ADV_SE_ErrorResponse"
+                        },
+                        {
+                            "code": 500,
+                            "message": "Could not retrieve data from OPENi",
+                            "responseModel": "ADV_SE_ErrorResponse"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "models": {
+        "ADV_SE_Status": {
+            "id": "ADV_SE_Status",
+            "properties": {
+                "code": {
+                    "type"        : "integer",
+                    "format"      : "int32",
+                    "description" : "Response code",
+                    "required"    : true
+                },
+                "message":{
+                    "type"     :"string",
+                    "description" : "Descriptive message",
+                    "required" : false
+                }
+            }
+        },
+        "ADV_SE_Object": {
+            "id": "ADV_SE_Object",
+            "properties": {
+                "audMng":{
+                    "type"        :"JSON",
+                    "description" : "The audience creteria",
+                    "required"    : false
+                },
+                "demographics":{
+                    "type"        :"JSON",
+                    "description" : "The requested demographics",
+                    "required"    : false
+                }
+            }
+        },
+        "ADV_SE_Response": {
+            "id": "ADV_SE_Response",
+            "properties": {
+                "audMng": {
+                    "type"        : "JSON",
+                    "description" : "The number of cloudlets that meet the creteria",
+                    "required"    : true
+                },
+                "demographics": {
+                    "type"        : "JSON",
+                    "description" : "The cloudlet demographics based on the audMng creteria and the requested demographics attributes",
+                    "required"    : true
+                }
+            }
+        },
+        "ADV_SE_ErrorResponse": {
+            "id": "ADV_SE_ErrorResponse",
+            "properties": {
+                "error": {
+                    "type"        : "string",
+                    "description" : "Description of error that occurred.",
+                    "required"    : true
+                }
+            }
+        }
+    }
+}
