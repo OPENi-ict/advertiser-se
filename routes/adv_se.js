@@ -23,8 +23,11 @@ router.post('/', function (req, res) {
         res.send("Not valid JSON \n" + query[1].message);
     }
 
+    //console.log("===== OPENi search query =====");
+    //console.log(decodeURIComponent(query[1]));
+
     var openi_req = https.request({
-            host: '127.0.0.1',
+            host: 'openi-platform.velti.com',
             port: 443,
             path: "/api/v1/search?" + query[1],
             method: 'GET',
@@ -91,7 +94,7 @@ function decodeReq(reqBody) {
                 jsonToQuery = jsonToQuery + "&" + obj + "=" + audMngArray[obj];
         }
 
-        return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery)];
+        return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery+'&personalization_opt_out=no')];
 
     } catch (e) {
         // An error has occured, handle it, by e.g. logging it

@@ -10,6 +10,8 @@ var router = express.Router();
 
 router.get('/', function (req, res) {
 
+    console.log("Loading Index Swagger JSON...");
+    console.log("Request Body: ");
     console.log(req.body);
     //res.header("Access-Control-Allow-Origin", "*");
     var index_swaggerjson  = fs.readFileSync('swagger-json/adv_se_index.json','utf8');
@@ -20,6 +22,8 @@ router.get('/', function (req, res) {
 
 router.get('/adv_se', function (req, res) {
 
+    console.log("Loading audDemographics Swagger JSON...");
+    console.log("Request Body: ");
     console.log(req.body);
     //res.header("Access-Control-Allow-Origin", "*");
     var index_swaggerjson  = fs.readFileSync('swagger-json/adv_se_audDemographics.json','utf8');

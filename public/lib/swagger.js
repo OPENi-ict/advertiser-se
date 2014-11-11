@@ -1153,7 +1153,7 @@
           values[param.name] = param;
       }
 
-      if (headers["Content-Type"].indexOf("application/x-www-form-urlencoded") === 0) {
+      if (headers["Content-Type"].indexOf("application/x-server.js-form-urlencoded") === 0) {
         var encoded = "";
         var key, value;
         for (key in values) {
@@ -1266,7 +1266,7 @@
         if (definedFileParams.length > 0)
           consumes = "multipart/form-data";
         else
-          consumes = "application/x-www-form-urlencoded";
+          consumes = "application/x-server.js-form-urlencoded";
       }
       else if (this.type === "DELETE")
         body = "{}";
@@ -1293,7 +1293,7 @@
       }
     }
 
-    if ((consumes && body !== "") || (consumes === "application/x-www-form-urlencoded"))
+    if ((consumes && body !== "") || (consumes === "application/x-server.js-form-urlencoded"))
       headers["Content-Type"] = consumes;
     if (accepts)
       headers["Accept"] = accepts;

@@ -1089,7 +1089,7 @@ var processOptions = function(request,options) {
     return;
   }
 
-  // Allow for the [use of a proxy](http://www.jmarshall.com/easy/http/#proxies).
+  // Allow for the [use of a proxy](http://server.js.jmarshall.com/easy/http/#proxies).
 
   if (options.url) {
     if (options.proxy) {
@@ -1520,7 +1520,7 @@ require.define("/node_modules/sprintf/package.json", function (require, module, 
 require.define("/node_modules/sprintf/lib/sprintf.js", function (require, module, exports, __dirname, __filename) {
     /**
 sprintf() for JavaScript 0.7-beta1
-http://www.diveintojavascript.com/projects/javascript-sprintf
+http://server.js.diveintojavascript.com/projects/javascript-sprintf
 
 Copyright (c) Alexandru Marasteanu <alexaholic [at) gmail (dot] com>
 All rights reserved.
@@ -1559,7 +1559,7 @@ Changelog:
 2010.05.22 - 0.6:
  - reverted to 0.4 and fixed the bug regarding the sign of the number 0
  Note:
- Thanks to Raphael Pigulla <raph (at] n3rd [dot) org> (http://www.n3rd.org/)
+ Thanks to Raphael Pigulla <raph (at] n3rd [dot) org> (http://server.js.n3rd.org/)
  who warned me about a bug in 0.5, I discovered that the last update was
  a regress. I appologize for that.
 
@@ -2113,7 +2113,7 @@ module.exports = Content;
 require.define("/shred/mixins/headers.js", function (require, module, exports, __dirname, __filename) {
     // The header mixins allow you to add HTTP header support to any object. This
 // might seem pointless: why not simply use a hash? The main reason is that, per
-// the [HTTP spec](http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2),
+// the [HTTP spec](http://server.js.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2),
 // headers are case-insensitive. So, for example, `content-type` is the same as
 // `CONTENT-TYPE` which is the same as `Content-Type`. Since there is no way to
 // overload the index operator in Javascript, using a hash to represent the
