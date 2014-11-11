@@ -175,7 +175,7 @@ Content.registerProcessor(
 var qs = require('querystring');
 // Register the post processor, which is used for JSON-based media types.
 Content.registerProcessor(
-  ["application/x-server.js-form-urlencoded"],
+  ["application/x-www-form-urlencoded"],
   { parser : qs.parse, stringify : qs.stringify });
 
 // Error functions are defined separately here in an attempt to make the code

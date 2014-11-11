@@ -3,7 +3,7 @@
 $(function() {
 
 	// Helper function for vertically aligning DOM elements
-	// http://server.js.seodenver.com/simple-vertical-align-plugin-for-jquery/
+	// http://www.seodenver.com/simple-vertical-align-plugin-for-jquery/
 	$.fn.vAlign = function() {
 		return this.each(function(i){
 		var ah = $(this).height();

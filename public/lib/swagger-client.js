@@ -852,7 +852,7 @@ Operation.prototype.execute = function(arg1, arg2, arg3, arg4, parent) {
     }
   }
   // handle form params
-  if(headers['Content-Type'] === 'application/x-server.js-form-urlencoded') {
+  if(headers['Content-Type'] === 'application/x-www-form-urlencoded') {
     var encoded = "";
     var key;
     for(key in formParams) {
@@ -924,7 +924,7 @@ Operation.prototype.setContentTypes = function(args, opts) {
       if(definedFileParams.length > 0)
         consumes = 'multipart/form-data';
       else
-        consumes = 'application/x-server.js-form-urlencoded';
+        consumes = 'application/x-www-form-urlencoded';
     }
     else if (this.type == 'DELETE')
       body = '{}';
@@ -951,7 +951,7 @@ Operation.prototype.setContentTypes = function(args, opts) {
     }
   }
 
-  if ((consumes && body !== '') || (consumes === 'application/x-server.js-form-urlencoded'))
+  if ((consumes && body !== '') || (consumes === 'application/x-www-form-urlencoded'))
     headers['Content-Type'] = consumes;
   if (accepts)
     headers['Accept'] = accepts;
