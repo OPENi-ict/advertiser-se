@@ -1,6 +1,7 @@
 /**
  * Created by nstasinos on 5/11/2014.
  */
+var https = require('https');
 
 // login user
 
@@ -10,11 +11,12 @@
 
 // -- for # of users
 
-https = require('https');
+
 
 /*var opt = '';
  var numOfOpts = -1;*/
 
+/*
 process.argv.forEach(function (val, index, array) {
     console.log(index + ': ' + val);
 });
@@ -23,11 +25,14 @@ if (process.argv.length === 4) {
     var opt = process.argv[2];
     var numOfOpts = process.argv[3];
 }
+*/
 
-var client_id = "adv_se";
+//var client_id = "adv_se";
+
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
  */
+/*
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
@@ -63,20 +68,20 @@ function loginUsers(username, password) {
     )
 }
 
+*/
+
 function findOptOut(success) {
-
-    var query = 'property_filter=' + encodeURIComponent('personalization_opt_out=yes') + '&id_only=true';
-
-    var openi_req = https.request({
+    "use strict";
+    var query = 'property_filter=' + encodeURIComponent('personalization_opt_out=yes') + '&id_only=true',
+        openi_req = https.request({
             host: 'openi-platform.velti.com',
             port: 443,
             path: "/api/v1/search?" + query,
             method: 'GET',
             rejectUnauthorized: false
-        },
-        function (openi_res) {
+        }, function (openi_res) {
 
-            console.log("***** OPENi response: " + openi_res.statusCode + " *****");
+            //console.log("***** OPENi response: " + openi_res.statusCode + " *****");
 
             var body = [];
 
@@ -87,7 +92,7 @@ function findOptOut(success) {
             }).on('end', function () {
                 try {
                     var search_res_json = JSON.parse(Buffer.concat(body));
-                    console.log("num of opt outs found: " + search_res_json.length);
+                    //console.log("num of opt outs found: " + search_res_json.length);
                     success(search_res_json);
                 } catch (e) {
                     console.log("Got error: " + e.message);
@@ -105,10 +110,9 @@ function findOptOut(success) {
 }
 
 function findOptIn(success) {
-
-    var query = 'property_filter=' + encodeURIComponent('personalization_opt_out=no') + '&id_only=true';
-
-    var openi_req = https.request({
+    "use strict";
+    var query = 'property_filter=' + encodeURIComponent('personalization_opt_out=no') + '&id_only=true',
+        openi_req = https.request({
             host: 'openi-platform.velti.com',
             port: 443,
             path: "/api/v1/search?" + query,
@@ -116,10 +120,9 @@ function findOptIn(success) {
             rejectUnauthorized: false,
             requestCert: false,
             agent: false
-        },
-        function (openi_res) {
+        }, function (openi_res) {
 
-            console.log("***** OPENi response: " + openi_res.statusCode + " *****");
+            //console.log("***** OPENi response: " + openi_res.statusCode + " *****");
 
             var body = [];
 
@@ -129,8 +132,8 @@ function findOptIn(success) {
 
             }).on('end', function () {
                 try {
-                    search_res_json = JSON.parse(Buffer.concat(body));
-                    console.log("num of opt ins found: " + search_res_json.length);
+                    var search_res_json = JSON.parse(Buffer.concat(body));
+                    //console.log("num of opt ins found: " + search_res_json.length);
                     success(search_res_json);
                 } catch (e) {
                     console.log("Got error: " + e.message);
@@ -148,24 +151,24 @@ function findOptIn(success) {
 }
 
 function postScript(method, postdata, path, addheaders, success, error) {
-
+    "use strict";
     // An object of options to indicate where to post to
-    var post_data = postdata;
-
-    post_data = JSON.stringify(post_data);
-
-    var headers = {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(post_data)
-    };
+    var obj, options, req,
+        post_data = JSON.stringify(postdata),
+        headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(post_data)
+        };
 
     if (typeof addheaders === 'object') {
-        for (var obj in addheaders) {
-            headers[obj] = addheaders.obj;
+        for (obj in addheaders) {
+            if (addheaders.hasOwnProperty(obj)) {
+                headers[obj] = addheaders.obj;
+            }
         }
     }
 
-    var options = {
+    options = {
         host: 'openi-platform.velti.com',
         port: 443,
         path: path,
@@ -174,7 +177,7 @@ function postScript(method, postdata, path, addheaders, success, error) {
         rejectUnauthorized: false
     };
 
-    var req = https.request(options, function (res) {
+    req = https.request(options, function (res) {
         res.setEncoding('utf-8');
 
         var responseString = '';
@@ -185,7 +188,7 @@ function postScript(method, postdata, path, addheaders, success, error) {
 
         res.on('end', function () {
             var resultObject = JSON.parse(responseString);
-            success(resultObject)
+            success(resultObject);
         });
     });
 
@@ -200,24 +203,23 @@ function postScript(method, postdata, path, addheaders, success, error) {
 }
 
 function getScript(postdata, path, addheaders, success, error) {
-
+    "use strict";
     // An object of options to indicate where to post to
-    var post_data = postdata;
-
-    post_data = JSON.stringify(post_data);
-
-    var headers = {
-        'Content-Type': 'application/json',
-        'Content-Length': post_data.length
-    };
+    var post_data = JSON.stringify(postdata), obj, options, req,
+        headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': post_data.length
+        };
 
     if (typeof addheaders === 'object') {
-        for (var obj in addheaders) {
-            headers[obj] = addheaders.obj;
+        for (obj in addheaders) {
+            if (addheaders.hasOwnProperty(obj)) {
+                headers[obj] = addheaders.obj;
+            }
         }
     }
 
-    var options = {
+    options = {
         host: 'openi-platform.velti.com',
         port: 443,
         path: path,
@@ -228,7 +230,7 @@ function getScript(postdata, path, addheaders, success, error) {
         agent: false
     };
 
-    var req = https.request(options, function (res) {
+    req = https.request(options, function (res) {
         res.setEncoding('utf-8');
 
         var responseString = '';
@@ -239,7 +241,7 @@ function getScript(postdata, path, addheaders, success, error) {
 
         res.on('end', function () {
             var resultObject = JSON.parse(responseString);
-            success(resultObject)
+            success(resultObject);
         });
     });
 
@@ -254,55 +256,54 @@ function getScript(postdata, path, addheaders, success, error) {
 }
 
 function optInOut(opt, numOfOpts, success) {
+    "use strict";
     if (opt === 'in') {
         findOptOut(function (data) {
 
-            var optOutObjs = data;
-            for (var i = 0; i < numOfOpts; i++) {
-                getScript(null, "/api/v1/objects/" + optOutObjs[i]['cloudlet_id'] + "/" + optOutObjs[i]['object_id'], '', function (objData) {
-                    console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
-                    objData['@data']['personalization_opt_out'] = 'no';
+            var optOutObjs = data, i;
+            for (i = 0; i < numOfOpts; i++) {
+                getScript(null, "/api/v1/objects/" + optOutObjs[i].cloudlet_id + "/" + optOutObjs[i].object_id, '', function (objData) {
+                    //console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
+                    objData['@data'].personalization_opt_out = 'no';
                     var updateData = {
                         "@openi_type": objData['@openi_type'].replace("https://openi-platform.velti.com/api/v1/types/", ""),
                         "@data": objData['@data']
                     };
                     postScript('PUT', updateData, "/api/v1/objects/" + objData['@cloudlet'] + "/" + objData['@id'] + "/" + objData._revision, null, function () {
                         //console.log(data);
-                        console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
-                        success();
-                    })
-                })
+                        //console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
+                    });
+                });
             }
-
+            if (i === numOfOpts) {
+                success();
+            }
         });
 
-    }
-    else if (opt === 'out') {
+    } else if (opt === 'out') {
         findOptIn(function (data) {
 
-            var optInObjs = data;
-            for (var i = 0; i < numOfOpts; i++) {
-                getScript(null, "/api/v1/objects/" + optInObjs[i]['cloudlet_id'] + "/" + optInObjs[i]['object_id'], '', function (objData) {
-                    console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
-                    objData['@data']['personalization_opt_out'] = 'yes';
+            var optInObjs = data, i;
+            for (i = 0; i < numOfOpts; i++) {
+                getScript(null, "/api/v1/objects/" + optInObjs[i].cloudlet_id + "/" + optInObjs[i].object_id, '', function (objData) {
+                    //console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
+                    objData['@data'].personalization_opt_out = 'yes';
                     var updateData = {
                         "@openi_type": objData['@openi_type'].replace("https://openi-platform.velti.com/api/v1/types/", ""),
                         "@data": objData['@data']
                     };
                     postScript('PUT', updateData, "/api/v1/objects/" + objData['@cloudlet'] + "/" + objData['@id'] + "/" + objData._revision, null, function () {
                         //console.log(data);
-                        console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
-                        success();
-                    })
-                })
+                        //console.log(objData['@id'] + ": " + objData['@data']['personalization_opt_out']);
+                    });
+                });
+            }
+            if (i === numOfOpts) {
+                success();
             }
         });
 
     }
 }
-
-//loginUsers("adv1","adv1");
-
-//optInOut('out',2);
 
 module.exports = {optInOut: optInOut, postScript: postScript};
