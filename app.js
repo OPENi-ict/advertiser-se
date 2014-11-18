@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 
 var adv_se = require('./routes/adv_se');
+var advertiserID = require('./routes/advertiserID');
 var swagger = require('./routes/swagger');
 
 var app = express();
@@ -41,8 +42,8 @@ app.use(function (req, res, next) {
 app.use(logger('dev', {stream: ad_se_LogStream}));
 app.use(bodyParser.json());
 app.use("/advse-swaggerui", express.static(path.join(__dirname, 'public')));
-
-app.use('/adv_se/audDemographics', adv_se);
+app.use('/adv_se/advertiserID', advertiserID);
+app.use('/adv_se/audDemographics', adv_se.router);
 app.use('/advse-swagger', swagger);
 
 // catch 404 and forward to error handler

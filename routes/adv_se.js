@@ -212,5 +212,5 @@ function buildDemographicsJSON(demographReq, contextObjs) {
  return ret;
  };*/
 
-module.exports = router;
+module.exports = {router: router, decodeReq: decodeReq, mutlipleValuesQuery: mutlipleValuesQuery};
 
