@@ -25,7 +25,7 @@ function postScript(method, postdata, path, addheaders, success, error) {
     }
 
     options = {
-        host: 'openi-platform.velti.com',
+        host: '127.0.0.1',
         port: 443,
         path: path,
         method: method,
@@ -155,7 +155,7 @@ router.post('/', function (req, res) {
     //console.log(decodeURIComponent(query[1]));
 
     openi_req = https.request({
-        host: 'openi-platform.velti.com',
+        host: '127.0.0.1',
         port: 443,
         path: "/api/v1/search?" + query[1] + "&id_only=true",
         method: 'GET',
