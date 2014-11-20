@@ -10,9 +10,9 @@ function mutlipleValuesQuery(name, values) {
         i;
     for (i = 0; i < values.length; i++) {
         if (i === 0) {
-            tmpStr = tmpStr + name + "=" + values[i];
+            tmpStr = tmpStr + name + "=" + encodeURIComponent(values[i]);
         } else {
-            tmpStr = tmpStr + "," + name + "=" + values[i];
+            tmpStr = tmpStr + "," + name + "=" + encodeURIComponent(values[i]);
         }
     }
 
@@ -33,12 +33,12 @@ function decodeReq(reqBody) {
                     if (typeof audMngArray[obj] === "object") {
                         jsonToQuery = jsonToQuery + mutlipleValuesQuery(obj, audMngArray[obj]); /*split(audMngArray[obj], ',', audMngArray[obj].length)*/
                     } else {
-                        jsonToQuery = jsonToQuery + obj + "=" + audMngArray[obj];
+                        jsonToQuery = jsonToQuery + obj + "=" + encodeURIComponent(audMngArray[obj]);
                     }
                 } else if (typeof audMngArray[obj] === "object") {
                     jsonToQuery = jsonToQuery + "&" + mutlipleValuesQuery(obj, audMngArray[obj]); /*split(audMngArray[obj], ',', audMngArray[obj].length)*/
                 } else {
-                    jsonToQuery = jsonToQuery + "&" + obj + "=" + audMngArray[obj];
+                    jsonToQuery = jsonToQuery + "&" + obj + "=" + encodeURIComponent(audMngArray[obj]);
                 }
             }
         }
