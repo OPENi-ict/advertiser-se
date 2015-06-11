@@ -1,8 +1,121 @@
 var express = require('express');
 var https = require('https');
+var Promise = require('bluebird');
 var router = express.Router();
+var configAuth = require('./../config')['auth'];
+var configSearch = require('./../config')['search'];
+var Client = require('node-rest-client').Client;
+var ENCODING = 'utf8';
 
-//var test = 0;
+var params = {
+    auth: '',
+    authURL: configAuth.authURL,
+    searchURL: configSearch.searchURL,
+    postAuthOptions: {
+        data: {
+            "username": configAuth.username,
+            "password": configAuth.password,
+            "scope": ""
+        },
+        headers:{
+            "Content-Type": "application/json"
+        }
+    },
+    getPostSearchOptions: function () {
+        var that = this;
+        return {
+            headers: {
+                "Authorization": that.auth
+            }
+        }
+    }
+};
+
+router.post('/', function (req, res) {
+    "use strict";
+    var query = null;
+    try {
+        query = decodeReq(req.body);
+    } catch(err) {
+        console.log('err: ', err);
+    }
+    if (query === null || query[0] === "Error") {
+        res.status(400);
+        res.send("Not valid JSON \n" + query[1].message);
+    }
+    console.log('body: ', req.body);
+    console.log('query: ', query);
+    getAuth()
+        .then(function () {
+            return postTheSearch(query, req.body.demographics);
+        })
+        .done(function (result) {
+            console.log('done()');
+            console.log('result: ', result);
+            res.send(result);
+        }, function (err) {
+            console.log('done() error');
+            console.log('err: ', err);
+            res.send('err: ' + err);
+        });
+});
+
+function search(query, demographics) {
+    console.log('search()');
+    return getAuth().then(function () {
+        return postTheSearch(query, demographics)
+    });
+}
+
+function getAuth() {
+    return params.auth === '' ? getAuthFromOpeni() : Promise.resolve(params.auth);
+}
+
+function getAuthFromOpeni() {
+    return new Promise(function (resolve, reject) {
+        console.log('gettitng new token');
+        var client = new Client();
+        client.post(params.authURL, params.postAuthOptions,
+            function (data) {
+                var dataStr = data.toString(ENCODING);
+                var token = JSON.parse(dataStr).session;
+                console.log('dataStr: ', dataStr);
+                params.auth = token;
+                console.log('auth: ', params.auth);
+                resolve();
+            }, function (err) {
+                reject(err);
+            });
+    });
+}
+
+function postTheSearch(query, demographics) {
+    return new Promise(function (resolve, reject) {
+        console.log('post the search');
+        var client = new Client();
+        var urlAndQuery = params.searchURL
+        urlAndQuery += '?'+ query[1];
+        console.log('urlAndQuery: ', urlAndQuery);
+        client.get(urlAndQuery, params.getPostSearchOptions(),
+            function (data) {
+                try {
+                    var dataStr = data.toString(ENCODING);
+                    var openiData = JSON.parse(dataStr);
+                    console.log('got: ', openiData);
+                    var demographicsJSON = getDemographics(openiData, demographics);
+                    var resJSON = JSON.parse('{"audMng": {"num":' +
+                    openiData.meta.total_count +
+                        '},"demographics": ' +
+                        JSON.stringify(demographicsJSON) + ' }');
+                    resolve(resJSON);
+                } catch(err) {
+                    reject(err);
+                }
+            }, function (err) {
+                reject("Couldn't connect with OPENi \n" + err);
+            });
+    });
+}
 
 function mutlipleValuesQuery(name, values) {
     "use strict";
@@ -15,14 +128,12 @@ function mutlipleValuesQuery(name, values) {
             tmpStr = tmpStr + "," + name + "=" + encodeURIComponent(values[i]);
         }
     }
-
     return tmpStr;
 }
 
 function decodeReq(reqBody) {
     "use strict";
     try {
-
         var req_json = reqBody,
             audMngArray = req_json.audMng,
             jsonToQuery = "",
@@ -42,9 +153,7 @@ function decodeReq(reqBody) {
                 }
             }
         }
-
         return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery + '&personalization_opt_out=no')];
-
     } catch (e) {
         // An error has occured, handle it, by e.g. logging it
         console.log(e);
@@ -53,7 +162,7 @@ function decodeReq(reqBody) {
     }
 }
 
-function demographics(contextObjs, reqAttr) {
+function getDemographics(contextObjs, reqAttr) {
     "use strict";
     var demographJSON = {},
         test =  reqAttr,
@@ -61,7 +170,6 @@ function demographics(contextObjs, reqAttr) {
         cntxtObjNum,
         j,
         cntxAttrVal;
-
     for (demographAttrName in test) {      // attribute name in request                                                             // list with available/requested attributes of object
         if (test.hasOwnProperty(demographAttrName)) {
             for (cntxtObjNum = 0; cntxtObjNum < contextObjs.length; cntxtObjNum++) {    // search in every object from the cloudlet search response
@@ -98,119 +206,16 @@ function demographics(contextObjs, reqAttr) {
             }
         }
     }
-
     return demographJSON;
 }
 
-router.post('/', function (req, res) {
-    /*
-     *  req:
-     *  {
-     *       "audMng": {"attr1":[x1,x2,...], "attr2":x3, ...}  <- AND op
-     *       demograph: "c,d=xx"
-     *  }
-     *
-     * */
-    "use strict";
-    console.log("===== Request JSON =====");
-    console.log(req.body);
+module.exports = {
+    router: router,
+    decodeReq: decodeReq,
+    mutlipleValuesQuery: mutlipleValuesQuery
+};
 
-    var query = decodeReq(req.body),
-        openi_req;
-    if (query[0] === "Error") {
-        res.status(400);
-        res.send("Not valid JSON \n" + query[1].message);
-    }
-
-    //console.log("===== OPENi search query =====");
-    //console.log(decodeURIComponent(query[1]));
-
-    openi_req = https.request({
-        host: '127.0.0.1',
-        port: 443,
-        path: "/api/v1/search?" + query[1],
-        method: 'GET',
-        rejectUnauthorized: false,
-        requestCert: true,
-        agent: false
-    }, function (openi_res) {
-
-        console.log("***** OPENi response: " + openi_res.statusCode);
-
-        var body = [];
-
-        openi_res.on('data', function (data) {
-
-            body.push(data);
-
-        }).on('end', function () {
-            try {
-                var search_res_json = JSON.parse(Buffer.concat(body)),
-                    demographicsJSON = demographics(search_res_json, req.body.demographics),
-                    res_json = JSON.parse('{"audMng": {"num":' + search_res_json.length + '},"demographics": ' + JSON.stringify(demographicsJSON) + ' }'); // this may has duplicate cloudletids - NOT ANYMORE
-                console.log("===== Response JSON =====");
-                console.log(res_json);
-                res.send(res_json);
-            } catch (e) {
-                console.log("Got error: " + e.message);
-                res.status(500);
-                res.send("Non-valid JSON received from OPENi \n" + e.message);
-            }
-        });
-
-    });
-    openi_req.end();
-
-    openi_req.on('error', function (e) {
-
-        console.log("Got error: " + e.message);
-        res.status(500);
-        res.send("Couldn't connect with OPENi \n" + e.message);
-
-    });
-});
-
-/*
-function buildDemographicsJSON(demographReq, contextObjs) {
-
-    var demographJSON = {};
-
-    for (var cntx in contextObjs[0]['@data']) {
-        for (var i = 0; i < contextObjs.length; i++) {
-            for (var innerObj in contextObjs[i]['@data']) {
-                if (innerObj == cntx) {
-                    if (demographJSON.hasOwnProperty(innerObj)) {
-                        if (demographJSON[innerObj].hasOwnProperty(contextObjs[i]['@data'][innerObj])) {
-                            demographJSON[innerObj][contextObjs[i]['@data'][innerObj]]++;
-                            break
-                        }
-                        else {
-                            demographJSON[innerObj][contextObjs[i]['@data'][innerObj]] = 1;
-                            break
-                        }
-                    }
-                    else {
-                        demographJSON[innerObj] = JSON.parse("{ \"" + contextObjs[i]['@data'][innerObj] + "\" : 1}");
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    return demographJSON;
-}
-*/
-
-
-
-/*var split = function (str, chr, limit) {
- var parts = str.split(chr);
- var ret = parts.slice(0, limit - 1);
-
- ret.push(parts.slice(limit - 1).join(chr));
- return ret;
- };*/
-
-module.exports = {router: router, decodeReq: decodeReq, mutlipleValuesQuery: mutlipleValuesQuery};
-
+// req: {
+//     "audMng": {"attr1":[x1,x2,...], "attr2":x3, ...}  <- AND op
+//     demograph: "c,d=xx"
+//}
