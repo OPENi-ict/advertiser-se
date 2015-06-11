@@ -2,10 +2,16 @@ var express = require('express');
 var https = require('https');
 var Promise = require('bluebird');
 var router = express.Router();
+var log = require('npmlog');
+log.level = require('./../config').logLevel;
+log.heading = require('./../config').logHeader;
 var configAuth = require('./../config')['auth'];
 var configSearch = require('./../config')['search'];
 var Client = require('node-rest-client').Client;
 var ENCODING = 'utf8';
+var LOG_TAG = 'adv_se';
+
+log.info(LOG_TAG, 'adv_se.js');
 
 var params = {
     auth: '',
@@ -23,7 +29,7 @@ var params = {
     },
     getPostSearchOptions: function () {
         var that = this;
-        console.log('that auth: ', that.auth);
+        log.verbose(LOG_TAG, 'that auth: ', that.auth);
         return {
             headers: {
                 "Authorization": that.auth
@@ -36,34 +42,34 @@ router.post('/', function (req, res) {
     "use strict";
     var query = null;
     try {
-        console.log('query: ', query);
+        log.verbose(LOG_TAG, 'query: ', query);
         query = decodeReq(req.body);
     } catch(err) {
-        console.log('err: ', err);
+        log.error(LOG_TAG, 'err: ', err);
     }
     if (query === null || query[0] === "Error") {
         res.status(400);
         res.send("Not valid JSON \n" + query[1].message);
     }
-    console.log('body: ', req.body);
-    console.log('query: ', query);
+    log.verbose(LOG_TAG, 'body: ', req.body);
+    log.verbose(LOG_TAG, 'query: ', query);
     getAuth()
         .then(function () {
             return postTheSearch(query, req.body.demographics);
         })
         .done(function (result) {
-            console.log('done()');
-            console.log('result: ', result);
+            log.verbose(LOG_TAG, 'done()');
+            log.verbose(LOG_TAG, 'result: ', result);
             res.send(result);
         }, function (err) {
-            console.log('done() error');
-            console.log('err: ', err);
+            log.error(LOG_TAG, 'done() error');
+            log.error(LOG_TAG, 'err: ', err);
             res.send('err: ' + err);
         });
 });
 
 function search(query, demographics) {
-    console.log('search()');
+    log.verbose(LOG_TAG, 'search()');
     return getAuth().then(function () {
         return postTheSearch(query, demographics)
     });
@@ -75,17 +81,18 @@ function getAuth() {
 
 function getAuthFromOpeni() {
     return new Promise(function (resolve, reject) {
-        console.log('gettitng new token');
+        log.verbose(LOG_TAG, 'gettitng new token');
         var client = new Client();
         client.post(params.authURL, params.postAuthOptions,
             function (data) {
                 var dataStr = data.toString(ENCODING);
                 var token = JSON.parse(dataStr).session;
-                console.log('dataStr: ', dataStr);
+                log.verbose(LOG_TAG, 'dataStr: ', dataStr);
                 params.auth = token;
-                console.log('auth: ', params.auth);
+                log.verbose(LOG_TAG, 'auth: ', params.auth);
                 resolve();
             }, function (err) {
+                log.error(LOG_TAG, 'post err: ', err);
                 reject(err);
             });
     });
@@ -93,7 +100,7 @@ function getAuthFromOpeni() {
 
 function postTheSearch(query, demographics) {
     return new Promise(function (resolve, reject) {
-        console.log('post the search');
+        log.verbose(LOG_TAG, 'post the search');
         var client = new Client();
         var urlAndQuery = params.searchURL;
         query[1] = query[1].replace("%26", "%2C"); // ugly and nasty hack todo: correct.
@@ -103,7 +110,7 @@ function postTheSearch(query, demographics) {
                 try {
                     var dataStr = data.toString(ENCODING);
                     var openiData = JSON.parse(dataStr);
-                    console.log('got: ', openiData);
+                    log.verbose(LOG_TAG, 'got: ', openiData);
                     var demographicsJSON = getDemographics(openiData.result, demographics);
                     var resJSON = JSON.parse('{"audMng": {"num":' +
                     openiData.meta.total_count +
@@ -111,9 +118,11 @@ function postTheSearch(query, demographics) {
                         JSON.stringify(demographicsJSON) + ' }');
                     resolve(resJSON);
                 } catch(err) {
+                    log.error(LOG_TAG, 'getPostSearchOptions: ', err);
                     reject(err);
                 }
             }, function (err) {
+                log.error(LOG_TAG, 'get error: ', err);
                 reject("Couldn't connect with OPENi \n" + err);
             });
     });
@@ -158,7 +167,7 @@ function decodeReq(reqBody) {
         return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery + '&personalization_opt_out=no')];
     } catch (e) {
         // An error has occured, handle it, by e.g. logging it
-        console.log(e);
+        log.error(LOG_TAG, e);
         return ["Error", e];
         // send resp
     }

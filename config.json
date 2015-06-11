@@ -6,5 +6,7 @@
   },
   "search": {
     "searchURL": "https://demo2.openi-ict.eu/api/v1/search"
-  }
+  },
+  "logLevel": "silly",
+  "logHeader": "log"
 }
