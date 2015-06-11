@@ -2,9 +2,9 @@
   "auth": {
     "username": "panosAdvertiser",
     "password": "panosAdvertiser",
-    "authURL": "https://demo2.openi-ict.eu:443/api/v1/auth/sessions"
+    "authURL": "https://demo2.openi-ict.eu/api/v1/auth/sessions"
   },
   "search": {
-    "searchURL": "https://demo2.openi-ict.eu:443/api/v1/search"
+    "searchURL": "https://demo2.openi-ict.eu/api/v1/search"
   }
 }
