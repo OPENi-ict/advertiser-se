@@ -23,6 +23,7 @@ var params = {
     },
     getPostSearchOptions: function () {
         var that = this;
+        console.log('that auth: ', that.auth);
         return {
             headers: {
                 "Authorization": that.auth
@@ -35,6 +36,7 @@ router.post('/', function (req, res) {
     "use strict";
     var query = null;
     try {
+        console.log('query: ', query);
         query = decodeReq(req.body);
     } catch(err) {
         console.log('err: ', err);
@@ -93,16 +95,16 @@ function postTheSearch(query, demographics) {
     return new Promise(function (resolve, reject) {
         console.log('post the search');
         var client = new Client();
-        var urlAndQuery = params.searchURL
+        var urlAndQuery = params.searchURL;
+        query[1] = query[1].replace("%26", "%2C"); // ugly and nasty hack todo: correct.
         urlAndQuery += '?'+ query[1];
-        console.log('urlAndQuery: ', urlAndQuery);
         client.get(urlAndQuery, params.getPostSearchOptions(),
             function (data) {
                 try {
                     var dataStr = data.toString(ENCODING);
                     var openiData = JSON.parse(dataStr);
                     console.log('got: ', openiData);
-                    var demographicsJSON = getDemographics(openiData, demographics);
+                    var demographicsJSON = getDemographics(openiData.result, demographics);
                     var resJSON = JSON.parse('{"audMng": {"num":' +
                     openiData.meta.total_count +
                         '},"demographics": ' +
@@ -142,12 +144,12 @@ function decodeReq(reqBody) {
             if (audMngArray.hasOwnProperty(obj)) {
                 if (jsonToQuery === "") {
                     if (typeof audMngArray[obj] === "object") {
-                        jsonToQuery = jsonToQuery + mutlipleValuesQuery(obj, audMngArray[obj]); /*split(audMngArray[obj], ',', audMngArray[obj].length)*/
+                        jsonToQuery = jsonToQuery + mutlipleValuesQuery(obj, audMngArray[obj]);
                     } else {
                         jsonToQuery = jsonToQuery + obj + "=" + encodeURIComponent(audMngArray[obj]);
                     }
                 } else if (typeof audMngArray[obj] === "object") {
-                    jsonToQuery = jsonToQuery + "&" + mutlipleValuesQuery(obj, audMngArray[obj]); /*split(audMngArray[obj], ',', audMngArray[obj].length)*/
+                    jsonToQuery = jsonToQuery + "&" + mutlipleValuesQuery(obj, audMngArray[obj]);
                 } else {
                     jsonToQuery = jsonToQuery + "&" + obj + "=" + encodeURIComponent(audMngArray[obj]);
                 }
@@ -170,36 +172,42 @@ function getDemographics(contextObjs, reqAttr) {
         cntxtObjNum,
         j,
         cntxAttrVal;
-    for (demographAttrName in test) {      // attribute name in request                                                             // list with available/requested attributes of object
-        if (test.hasOwnProperty(demographAttrName)) {
-            for (cntxtObjNum = 0; cntxtObjNum < contextObjs.length; cntxtObjNum++) {    // search in every object from the cloudlet search response
-                if (typeof test[demographAttrName] === "object") {
-                    for (j = 0; j < test[demographAttrName].length; j++) {
-                        ////////////////////////////////////////////////////////////////////////////////////////////////////
-                        if (contextObjs[cntxtObjNum]['@data'].hasOwnProperty(demographAttrName)) {    //  check if cloudlet context #[cntxtObjNum] has the search property from client req               /*innerObj == cntx*/
-                            cntxAttrVal = contextObjs[cntxtObjNum]['@data'][demographAttrName];  // the value of the cloudlet context property
-                            // check if this property exists in the demographics (json to be sent)
-                            if (test[demographAttrName][j] === cntxAttrVal || test[demographAttrName][j] === "ALL") {   // check if the cloudlet context property value matches the req property value
-
-                                if (demographJSON[demographAttrName] !== undefined && demographJSON[demographAttrName].hasOwnProperty(cntxAttrVal)) {
-                                    demographJSON[demographAttrName][cntxAttrVal]++;
-                                } else {
-                                    if (demographJSON[demographAttrName] !== undefined) {
-                                        demographJSON[demographAttrName][cntxAttrVal] = 1;
-                                    } else {
-                                        demographJSON[demographAttrName] = JSON.parse("{ \"" + cntxAttrVal + "\" : 1}");
-                                    }
-                                }
-                            } else {
-                                if (demographJSON[demographAttrName] !== undefined && demographJSON[demographAttrName][test[demographAttrName][j]] === undefined) {
-                                    demographJSON[demographAttrName][test[demographAttrName][j]] = 0;
-                                } else if (demographJSON[demographAttrName] === undefined) {
-                                    demographJSON[demographAttrName] = JSON.parse("{ \"" + test[demographAttrName][j] + "\" : 0}");
-                                }
-
-                            }
+    // attribute name in request
+    for (demographAttrName in test) {
+        // list with available/requested attributes of object
+        if (!test.hasOwnProperty(demographAttrName)) { continue; }
+        // search in every object from the cloudlet search response
+        for (cntxtObjNum = 0; cntxtObjNum < contextObjs.length; cntxtObjNum++) {
+            if (typeof test[demographAttrName] === "object") {
+                for (j = 0; j < test[demographAttrName].length; j++) {
+                    //  check if cloudlet context #[cntxtObjNum] has the search property from client req
+                    if (!contextObjs[cntxtObjNum]['@data'].hasOwnProperty(demographAttrName)) {
+                        demographJSON[demographAttrName] = JSON.parse("{ \"" + test[demographAttrName][j] +
+                                "\" : 0}");
+                        continue;
+                    }
+                    // the value of the cloudlet context property
+                    cntxAttrVal = contextObjs[cntxtObjNum]['@data'][demographAttrName];
+                    // check if this property exists in the demographics (json to be sent)
+                    if (test[demographAttrName][j] === cntxAttrVal || test[demographAttrName][j] === "ALL") {
+                        // check if the cloudlet context property value matches the req property value
+                        if (demographJSON[demographAttrName] !== undefined &&
+                            demographJSON[demographAttrName].hasOwnProperty(cntxAttrVal)) {
+                            demographJSON[demographAttrName][cntxAttrVal]++;
                         } else {
-                            demographJSON[demographAttrName] = JSON.parse("{ \"" + test[demographAttrName][j] + "\" : 0}");
+                            if (demographJSON[demographAttrName] !== undefined) {
+                                demographJSON[demographAttrName][cntxAttrVal] = 1;
+                            } else {
+                                demographJSON[demographAttrName] = JSON.parse("{ \"" + cntxAttrVal + "\" : 1}");
+                            }
+                        }
+                    } else {
+                        if (demographJSON[demographAttrName] !== undefined &&
+                            demographJSON[demographAttrName][test[demographAttrName][j]] === undefined) {
+                            demographJSON[demographAttrName][test[demographAttrName][j]] = 0;
+                        } else if (demographJSON[demographAttrName] === undefined) {
+                            demographJSON[demographAttrName] = JSON.parse("{ \"" + test[demographAttrName][j] +
+                            "\" : 0}");
                         }
                     }
                 }
@@ -215,7 +223,3 @@ module.exports = {
     mutlipleValuesQuery: mutlipleValuesQuery
 };
 
-// req: {
-//     "audMng": {"attr1":[x1,x2,...], "attr2":x3, ...}  <- AND op
-//     demograph: "c,d=xx"
-//}
