@@ -71,13 +71,6 @@ router.post('/', function (req, res) {
         });
 });
 
-function search(query, demographics) {
-    log.verbose(LOG_TAG, 'search()');
-    return getAuth().then(function () {
-        return postTheSearch(query, demographics)
-    });
-}
-
 function getAuth() {
     return params.auth === '' ? getAuthFromOpeni() : Promise.resolve(params.auth);
 }
