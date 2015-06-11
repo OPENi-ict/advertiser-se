@@ -3,10 +3,13 @@ var https = require('https');
 var Promise = require('bluebird');
 var router = express.Router();
 var log = require('npmlog');
-log.level = require('./../config').logLevel;
-log.heading = require('./../config').logHeader;
-var configAuth = require('./../config')['auth'];
-var configSearch = require('./../config')['search'];
+var config = require('./../config');
+var configAuth = config.auth;
+var configSearch = config.search;
+
+log.level = config.log.level;
+log.heading = config.log.header;
+
 var Client = require('node-rest-client').Client;
 var ENCODING = 'utf8';
 var LOG_TAG = 'adv_se';
