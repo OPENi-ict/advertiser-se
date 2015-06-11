@@ -78,49 +78,58 @@ function getAuth() {
 function getAuthFromOpeni() {
     return new Promise(function (resolve, reject) {
         log.verbose(LOG_TAG, 'gettitng new token');
-        var client = new Client();
-        client.post(params.authURL, params.postAuthOptions,
-            function (data) {
-                var dataStr = data.toString(ENCODING);
-                var token = JSON.parse(dataStr).session;
-                log.verbose(LOG_TAG, 'dataStr: ', dataStr);
-                params.auth = token;
-                log.verbose(LOG_TAG, 'auth: ', params.auth);
-                resolve();
-            }, function (err) {
-                log.error(LOG_TAG, 'post err: ', err);
-                reject(err);
-            });
+        try {
+            var client = new Client();
+            client.post(params.authURL, params.postAuthOptions,
+                function (data) {
+                    var dataStr = data.toString(ENCODING);
+                    var token = JSON.parse(dataStr).session;
+                    log.verbose(LOG_TAG, 'dataStr: ', dataStr);
+                    params.auth = token;
+                    log.verbose(LOG_TAG, 'auth: ', params.auth);
+                    resolve();
+                }, function (err) {
+                    log.error(LOG_TAG, 'post err: ', err);
+                    reject(err);
+                });
+        } catch (e) {
+            reject(e);
+        }
+
     });
 }
 
 function postTheSearch(query, demographics) {
     return new Promise(function (resolve, reject) {
         log.verbose(LOG_TAG, 'post the search');
-        var client = new Client();
-        var urlAndQuery = params.searchURL;
-        query[1] = query[1].replace("%26", "%2C"); // ugly and nasty hack todo: correct.
-        urlAndQuery += '?'+ query[1];
-        client.get(urlAndQuery, params.getPostSearchOptions(),
-            function (data) {
-                try {
-                    var dataStr = data.toString(ENCODING);
-                    var openiData = JSON.parse(dataStr);
-                    log.verbose(LOG_TAG, 'got: ', openiData);
-                    var demographicsJSON = getDemographics(openiData.result, demographics);
-                    var resJSON = JSON.parse('{"audMng": {"num":' +
-                    openiData.meta.total_count +
+        try {
+            var client = new Client();
+            var urlAndQuery = params.searchURL;
+            query[1] = query[1].replace("%26", "%2C"); // ugly and nasty hack todo: correct.
+            urlAndQuery += '?'+ query[1];
+            client.get(urlAndQuery, params.getPostSearchOptions(),
+                function (data) {
+                    try {
+                        var dataStr = data.toString(ENCODING);
+                        var openiData = JSON.parse(dataStr);
+                        log.verbose(LOG_TAG, 'got: ', openiData);
+                        var demographicsJSON = tryGetDemographics(openiData.result, demographics);
+                        var resJSON = JSON.parse('{"audMng": {"num":' +
+                        openiData.meta.total_count +
                         '},"demographics": ' +
                         JSON.stringify(demographicsJSON) + ' }');
-                    resolve(resJSON);
-                } catch(err) {
-                    log.error(LOG_TAG, 'getPostSearchOptions: ', err);
-                    reject(err);
-                }
-            }, function (err) {
-                log.error(LOG_TAG, 'get error: ', err);
-                reject("Couldn't connect with OPENi \n" + err);
-            });
+                        resolve(resJSON);
+                    } catch(err) {
+                        log.error(LOG_TAG, 'getPostSearchOptions: ', err);
+                        reject(err);
+                    }
+                }, function (err) {
+                    log.error(LOG_TAG, 'get error: ', err);
+                    reject("Couldn't connect with OPENi \n" + err);
+                });
+        } catch (e) {
+            reject(e);
+        }
     });
 }
 
@@ -167,6 +176,10 @@ function decodeReq(reqBody) {
         return ["Error", e];
         // send resp
     }
+}
+
+function tryGetDemographics(contextObjs, reqAttr) {
+    getDemographics(contextObjs, reqAttr);
 }
 
 function getDemographics(contextObjs, reqAttr) {
