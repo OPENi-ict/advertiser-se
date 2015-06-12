@@ -1,11 +1,14 @@
 {
   "auth": {
-    "username": "panosAdvertiser",
-    "password": "panosAdvertiser",
+    "username": "",
+    "password": "",
     "authURL": "https://demo2.openi-ict.eu/api/v1/auth/sessions"
   },
   "search": {
     "searchURL": "https://demo2.openi-ict.eu/api/v1/search"
+  },
+  "post": {
+    "postURL": "https://demo2.openi-ict.eu/api/v1/search"
   },
   "log": {
     "level": "silly",
