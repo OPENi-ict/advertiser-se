@@ -124,7 +124,7 @@ function postTheSearch(query, demographics) {
                         if (openiData.error && openiData.error === TOKEN_HAS_EXPIRED) {
                             return resolve(TOKEN_HAS_EXPIRED);
                         }
-                        var demographicsJSON = tryGetDemographics(openiData.result, demographics);
+                        var demographicsJSON = getDemographics(openiData.result, demographics);
                         var resJSON = JSON.parse('{"audMng": {"num":' +
                             openiData.meta.total_count +
                             '},"demographics": ' +
@@ -189,11 +189,14 @@ function decodeReq(reqBody) {
     }
 }
 
-function tryGetDemographics(contextObjs, reqAttr) {
-    return getDemographics(contextObjs, reqAttr);
+function getDemographics(contextObjs, reqAttr) {
+    var demographics = undefined;
+    try { demographics = _getDemographics(contextObjs, reqAttr); }
+    catch(err) { demographics = Object.create(null); }
+    finally { return demographics; }
 }
 
-function getDemographics(contextObjs, reqAttr) {
+function _getDemographics(contextObjs, reqAttr) {
     "use strict";
     var demographJSON = {},
         test =  reqAttr,
