@@ -20,6 +20,7 @@ log.info(LOG_TAG, 'adv_se.js');
 
 router.post('/', function (req, res) {
     "use strict";
+
     var query = null;
     try {
         log.verbose(LOG_TAG, 'query: ', query);
@@ -30,10 +31,14 @@ router.post('/', function (req, res) {
     if (query === null || query[0] === "Error") {
         res.status(400);
         res.send("Not valid JSON \n" + query[1].message);
+        return;
     }
+
     log.verbose(LOG_TAG, 'body: ', req.body);
     log.verbose(LOG_TAG, 'query: ', query);
+
     var demographics = req.body.demographics;
+
     getAuth()
         .then(function () {
             return search(query);
@@ -52,15 +57,13 @@ router.post('/', function (req, res) {
             }
         })
         .done(function (result) {
-            console.log('result: ', result);
-            log.verbose(LOG_TAG, 'done()');
-            log.verbose(LOG_TAG, 'result: ', result);
+            log.verbose(LOG_TAG, 'done()', result);
             res.send(result);
         }, function (err) {
-            log.error(LOG_TAG, 'done() error');
-            log.error(LOG_TAG, 'err: ', err);
+            log.error(LOG_TAG, 'done() error', err);
             res.send('err: ' + err);
         });
+
 });
 
 function createResult(openiData, demographics) {
