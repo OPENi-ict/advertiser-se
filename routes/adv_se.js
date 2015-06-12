@@ -6,6 +6,7 @@ var log = require('npmlog');
 var config = require('./../config');
 var configAuth = config.auth;
 var configSearch = config.search;
+var demographicsProcessor = require('../utils/demographicsProcessor');
 
 log.level = config.log.level;
 log.heading = config.log.header;
@@ -64,9 +65,19 @@ router.post('/', function (req, res) {
         .then(function(result) {
             return result !== TOKEN_HAS_EXPIRED ?
                 Promise.resolve(result) :
-                getAuth().then(function () {
-                    return postTheSearch(query, req.body.demographics);
-                });
+                getAuth().then(function () { return postTheSearch(query, req.body.demographics); });
+        })
+        .then(function (obj) {
+            try {
+                var demographicsJSON = demographicsProcessor.getDemographics(obj.openiData.result, obj.demographics);
+                var resJSON = JSON.parse('{"audMng": {"num":' +
+                    obj.openiData.meta.total_count +
+                    '},"demographics": ' +
+                    JSON.stringify(demographicsJSON) + ' }');
+                return Promise.resolve(resJSON);
+            } catch (err) {
+                return Promise.reject(err);
+            }
         })
         .done(function (result) {
             log.verbose(LOG_TAG, 'done()');
@@ -120,16 +131,10 @@ function postTheSearch(query, demographics) {
                     try {
                         var dataStr = data.toString(ENCODING);
                         var openiData = JSON.parse(dataStr);
-                        //log.verbose(LOG_TAG, 'got: ', openiData);
                         if (openiData.error && openiData.error === TOKEN_HAS_EXPIRED) {
                             return resolve(TOKEN_HAS_EXPIRED);
                         }
-                        var demographicsJSON = getDemographics(openiData.result, demographics);
-                        var resJSON = JSON.parse('{"audMng": {"num":' +
-                            openiData.meta.total_count +
-                            '},"demographics": ' +
-                            JSON.stringify(demographicsJSON) + ' }');
-                        resolve(resJSON);
+                        return resolve({openiData: openiData, demographics: demographics});
                     } catch(err) {
                         log.error(LOG_TAG, 'getPostSearchOptions: ', err);
                         reject(err);
@@ -187,66 +192,6 @@ function decodeReq(reqBody) {
         return ["Error", e];
         // send resp
     }
-}
-
-function getDemographics(contextObjs, reqAttr) {
-    var demographics = undefined;
-    try { demographics = _getDemographics(contextObjs, reqAttr); }
-    catch(err) { demographics = Object.create(null); }
-    finally { return demographics; }
-}
-
-function _getDemographics(contextObjs, reqAttr) {
-    "use strict";
-    var demographJSON = {},
-        test =  reqAttr,
-        demographAttrName,
-        cntxtObjNum,
-        j,
-        cntxAttrVal;
-    // attribute name in request
-    for (demographAttrName in test) {
-        // list with available/requested attributes of object
-        if (!test.hasOwnProperty(demographAttrName)) { continue; }
-        // search in every object from the cloudlet search response
-        for (cntxtObjNum = 0; cntxtObjNum < contextObjs.length; cntxtObjNum++) {
-            if (typeof test[demographAttrName] === "object") {
-                for (j = 0; j < test[demographAttrName].length; j++) {
-                    //  check if cloudlet context #[cntxtObjNum] has the search property from client req
-                    if (!contextObjs[cntxtObjNum]['@data'].hasOwnProperty(demographAttrName)) {
-                        demographJSON[demographAttrName] = JSON.parse("{ \"" + test[demographAttrName][j] +
-                                "\" : 0}");
-                        continue;
-                    }
-                    // the value of the cloudlet context property
-                    cntxAttrVal = contextObjs[cntxtObjNum]['@data'][demographAttrName];
-                    // check if this property exists in the demographics (json to be sent)
-                    if (test[demographAttrName][j] === cntxAttrVal || test[demographAttrName][j] === "ALL") {
-                        // check if the cloudlet context property value matches the req property value
-                        if (demographJSON[demographAttrName] !== undefined &&
-                            demographJSON[demographAttrName].hasOwnProperty(cntxAttrVal)) {
-                            demographJSON[demographAttrName][cntxAttrVal]++;
-                        } else {
-                            if (demographJSON[demographAttrName] !== undefined) {
-                                demographJSON[demographAttrName][cntxAttrVal] = 1;
-                            } else {
-                                demographJSON[demographAttrName] = JSON.parse("{ \"" + cntxAttrVal + "\" : 1}");
-                            }
-                        }
-                    } else {
-                        if (demographJSON[demographAttrName] !== undefined &&
-                            demographJSON[demographAttrName][test[demographAttrName][j]] === undefined) {
-                            demographJSON[demographAttrName][test[demographAttrName][j]] = 0;
-                        } else if (demographJSON[demographAttrName] === undefined) {
-                            demographJSON[demographAttrName] = JSON.parse("{ \"" + test[demographAttrName][j] +
-                            "\" : 0}");
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return demographJSON;
 }
 
 module.exports = {
