@@ -13,6 +13,7 @@ log.heading = config.log.header;
 var Client = require('node-rest-client').Client;
 var ENCODING = 'utf8';
 var LOG_TAG = 'adv_se';
+var TOKEN_HAS_EXPIRED = 'Invalid token: TokenExpiredError: jwt expired';
 
 log.info(LOG_TAG, 'adv_se.js');
 
@@ -59,6 +60,13 @@ router.post('/', function (req, res) {
     getAuth()
         .then(function () {
             return postTheSearch(query, req.body.demographics);
+        })
+        .then(function(result) {
+            return result !== TOKEN_HAS_EXPIRED ?
+                Promise.resolve(result) :
+                getAuth().then(function () {
+                    return postTheSearch(query, req.body.demographics);
+                });
         })
         .done(function (result) {
             log.verbose(LOG_TAG, 'done()');
@@ -112,12 +120,15 @@ function postTheSearch(query, demographics) {
                     try {
                         var dataStr = data.toString(ENCODING);
                         var openiData = JSON.parse(dataStr);
-                        log.verbose(LOG_TAG, 'got: ', openiData);
+                        //log.verbose(LOG_TAG, 'got: ', openiData);
+                        if (openiData.error && openiData.error === TOKEN_HAS_EXPIRED) {
+                            return resolve(TOKEN_HAS_EXPIRED);
+                        }
                         var demographicsJSON = tryGetDemographics(openiData.result, demographics);
                         var resJSON = JSON.parse('{"audMng": {"num":' +
-                        openiData.meta.total_count +
-                        '},"demographics": ' +
-                        JSON.stringify(demographicsJSON) + ' }');
+                            openiData.meta.total_count +
+                            '},"demographics": ' +
+                            JSON.stringify(demographicsJSON) + ' }');
                         resolve(resJSON);
                     } catch(err) {
                         log.error(LOG_TAG, 'getPostSearchOptions: ', err);
@@ -179,7 +190,7 @@ function decodeReq(reqBody) {
 }
 
 function tryGetDemographics(contextObjs, reqAttr) {
-    getDemographics(contextObjs, reqAttr);
+    return getDemographics(contextObjs, reqAttr);
 }
 
 function getDemographics(contextObjs, reqAttr) {
