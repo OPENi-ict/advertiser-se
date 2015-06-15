@@ -8,10 +8,16 @@
     "searchURL": "https://demo2.openi-ict.eu/api/v1/search"
   },
   "post": {
-    "postURL": "https://demo2.openi-ict.eu/api/v1/search"
+    "username": "",
+    "password": "",
+    "objectsURL": "https://demo2.openi-ict.eu:443/api/v1/objects/",
+    "sessionURL": "https://demo2.openi-ict.eu:443/api/v1/auth/sessions",
+    "authURL": "https://demo2.openi-ict.eu:443/api/v1/auth/authorizations",
+    "api_key": "",
+    "secret": ""
   },
   "log": {
-    "level": "silly",
+    "level": "error",
     "header": "log"
   }
 }

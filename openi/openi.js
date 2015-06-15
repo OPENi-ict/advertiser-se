@@ -5,8 +5,10 @@ var Promise = require('bluebird');
 var config = require('./../config');
 var configAuth = config.auth;
 var configSearch = config.search;
+var configPost = config.post;
 
 var ENCODING = 'utf8';
+var TOKEN_HAS_EXPIRED = 'Invalid token: TokenExpiredError: jwt expired';
 
 log.level = config.log.level;
 log.heading = config.log.header;
@@ -15,6 +17,7 @@ var LOG_TAG = 'openi.js';
 
 var params = {
     auth: '',
+    authPost: '',
     authURL: configAuth.authURL,
     searchURL: configSearch.searchURL,
     postAuthOptions: {
@@ -29,7 +32,6 @@ var params = {
     },
     getPostSearchOptions: function () {
         var that = this;
-        log.verbose(LOG_TAG, 'that auth: ', that.auth);
         return {
             headers: {
                 "Authorization": that.auth

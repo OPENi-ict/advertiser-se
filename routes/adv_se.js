@@ -40,9 +40,7 @@ router.post('/', function (req, res) {
     var demographics = req.body.demographics;
 
     getAuth()
-        .then(function () {
-            return search(query);
-        })
+        .then(function () { return search(query); })
         .then(function(result) {
             return result !== TOKEN_HAS_EXPIRED ?
                 Promise.resolve(result) :
