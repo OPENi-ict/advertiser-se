@@ -24,7 +24,7 @@ var params = {
 function getDeveloperSession() {
     return new Promise(function (resolve) {
         log.verbose(LOG_TAG, 'getDeveloperSession()');
-        var url = 'https://demo2.openi-ict.eu:443/api/v1/auth/sessions';
+        var url = config.post.sessionURL;
         var options = {
             data: {
                 "username": configPost.username,
@@ -46,7 +46,7 @@ function getDeveloperSession() {
 function getDeveloperAuth(token) {
     return new Promise(function (resolve) {
         log.verbose(LOG_TAG, 'getDeveloperAuth()');
-        var url = 'https://demo2.openi-ict.eu:443/api/v1/auth/authorizations';
+        var url = config.post.authURL;
         var options = {
             data: {
                 "username": configPost.username,
@@ -75,7 +75,7 @@ function postObjectToCloudlets(cloudletIDs, obj) {
         getAuthPost().then(function () {
             cloudletIDs.forEach(function (cID) {
                 var request = new Promise(function (resolve) {
-                    var url = 'https://demo2.openi-ict.eu:443/api/v1/objects/' + cID;
+                    var url = config.post.objectsURL + cID;
                     var options = {
                         data: obj,
                         headers: {
