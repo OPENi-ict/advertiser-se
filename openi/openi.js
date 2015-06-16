@@ -5,7 +5,6 @@ var Promise = require('bluebird');
 var config = require('./../config');
 var configAuth = config.auth;
 var configSearch = config.search;
-var configPost = config.post;
 
 var ENCODING = 'utf8';
 var TOKEN_HAS_EXPIRED = 'Invalid token: TokenExpiredError: jwt expired';
