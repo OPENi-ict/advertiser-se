@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 var search = require('./../openi/openi').search;
 var getAuth = require('./../openi/openi').getAuth;
 var openi = require('./../openi/writeToCloudlets');
-var createAdvertisementMarker = require('./openi/advertisementMarker');
+var createAdvertisementMarker = require('./advertisementMarker');
 var decodeReq = require('../utils/utils').decodeReq;
 
 var config = require('./../config');
