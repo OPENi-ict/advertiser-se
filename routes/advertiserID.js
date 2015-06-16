@@ -2,7 +2,7 @@ var express = require('express');
 var log = require('npmlog');
 var https = require('https');
 
-var Promise = require('./bluebird');
+var Promise = require('bluebird');
 
 var search = require('./../openi/openi').search;
 var getAuth = require('./../openi/openi').getAuth;
