@@ -4,11 +4,19 @@ var advertisementProto = config.advertisementMarker;
 
 module.exports = function (campaignID, campaignName) {
     advertisement = getAdvertisement();
-    advertisement['@data'].name = campaignName + '_' + campaignID + '_' + new Date().getTime();
+    advertisement['@data'].name = campaignName + '_' + campaignID + '_' + getUnixTimeSeconds();
     return advertisement;
 };
 
 function getAdvertisement() {
-    return advertisementProto;
+    return advertisementProto   ;
 };
+
+function getUnixTimeSeconds() {
+    var now = new Date()
+        .getTime()
+        .toString()
+        .substring(0, now.length - 3);
+    return now;
+}
 
