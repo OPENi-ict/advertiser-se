@@ -45,7 +45,7 @@ module.exports = {
     getAuth: getAuth
 };
 
-function search(query) {
+function search(query, idsOnly) {
     return new Promise(function (resolve, reject) {
         log.verbose(LOG_TAG, 'post the search');
         try {
@@ -53,6 +53,9 @@ function search(query) {
             var urlAndQuery = params.searchURL;
             query[1] = query[1].replace("%26", "%2C"); // ugly and nasty hack todo: correct.
             urlAndQuery += '?'+ query[1];
+            if (idsOnly) {
+                urlAndQuery += '&id_only=true';
+            }
             client.get(urlAndQuery, params.getPostSearchOptions(),
                 function (data) {
                     try {
