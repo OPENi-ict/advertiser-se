@@ -14,6 +14,7 @@ log.heading = config.log.header;
 
 var LOG_TAG = 'aadvertiserID.js';
 var TOKEN_HAS_EXPIRED = 'Invalid token: TokenExpiredError: jwt expired';
+var CLOUDLET_INDEX = '@cloudlet';
 
 log.info(LOG_TAG, 'adcertiserID.js');
 
@@ -47,8 +48,8 @@ router.post('/', function (req, res) {
         })
         .then(function (openiData) {
             var cloudletIDs = [];
-            openiData.forEach(function (item) {
-                var cloudletID = item['cloudlet_id'];
+            openiData.result.forEach(function (item) {
+                var cloudletID = item[CLOUDLET_INDEX];
                 cloudletIDs.push(cloudletID);
             });
             // todo
