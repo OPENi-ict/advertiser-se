@@ -51,33 +51,31 @@ function search(query, url, idsOnly, previousPageResult) {
         try {
             var client = new Client();
             var urlAndQuery = formatQuery(query, url, idsOnly);
-            client.get(urlAndQuery, params.getPostSearchOptions(),
-                function (data) {
-                    try {
-                        var dataStr = data.toString(ENCODING);
-                        var openiData = JSON.parse(dataStr);
-                        if (openiData.error && openiData.error === TOKEN_HAS_EXPIRED) {
-                            return resolve(TOKEN_HAS_EXPIRED);
-                        }
-                        if (previousPageResult) {
-                            openiData.result = previousPageResult.concat(openiData.result);
-                        }
-                        var nextPage = openiData.meta.next;
-                        log.verbose(LOG_TAG, 'nextPage: ', nextPage);
-                        log.verbose(LOG_TAG, 'total results length: ', openiData.result.length);
-                        if (nextPage !== null) {
-                            return resolve(search(query, nextPage, idsOnly, openiData.result));
-                        } else {
-                            return resolve(openiData);
-                        }
-                    } catch(err) {
-                        log.error(LOG_TAG, 'getPostSearchOptions: ', err);
-                        return reject(err);
-                    }
-                });
         } catch (e) {
-            reject(e);
+            return reject(e);
         }
+        client.get(urlAndQuery, params.getPostSearchOptions(),
+            function (data) {
+                try {
+                    var dataStr = data.toString(ENCODING);
+                    var openiData = JSON.parse(dataStr);
+                    if (openiData.error && openiData.error === TOKEN_HAS_EXPIRED) {
+                        return resolve(TOKEN_HAS_EXPIRED);
+                    }
+                    if (previousPageResult) {
+                        openiData.result = previousPageResult.concat(openiData.result);
+                    }
+                    var nextPage = openiData.meta.next;
+                    log.verbose(LOG_TAG, 'nextPage: ', nextPage);
+                    log.verbose(LOG_TAG, 'total results length: ', openiData.result.length);
+                    return nextPage !== null ?
+                            resolve(search(query, nextPage, idsOnly, openiData.result)) :
+                            resolve(openiData);
+                } catch(err) {
+                    log.error(LOG_TAG, 'getPostSearchOptions: ', err);
+                    return reject(err);
+                }
+            });
     });
 }
 
