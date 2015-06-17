@@ -40,11 +40,11 @@ router.post('/', function (req, res) {
     var demographics = req.body.demographics;
 
     getAuth()
-        .then(function () { return search(query); })
+        .then(function () { return search(query, null); })
         .then(function(result) {
             return result !== TOKEN_HAS_EXPIRED ?
                 Promise.resolve(result) :
-                getAuth().then(function () { return search(query); });
+                getAuth().then(function () { return search(query, null); });
         })
         .then(function (openiData) {
             try {
@@ -65,10 +65,10 @@ router.post('/', function (req, res) {
 });
 
 function createResult(openiData, demographics) {
-    var resJSON = Object.create(null);
+    log.verbose(LOG_TAG, 'openiData.result.length: ', openiData.result.length);
     var demographicsJSON = demographicsProcessor.getDemographics(openiData.result, demographics);
-    resJSON = JSON.parse('{"audMng": {"num":' +
-            openiData.meta.total_count +
+    var resJSON = JSON.parse('{"audMng": {"num":' +
+            openiData.result.length +
             '},"demographics": ' +
     JSON.stringify(demographicsJSON) + ' }');
     return resJSON;

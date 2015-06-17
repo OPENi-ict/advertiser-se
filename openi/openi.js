@@ -13,12 +13,13 @@ log.level = config.log.level;
 log.heading = config.log.header;
 
 var LOG_TAG = 'openi.js';
+var PAGE_LENGTH = 30;
 
 var params = {
     auth: '',
     authPost: '',
     authURL: configAuth.authURL,
-    searchURL: configSearch.searchURL,
+    searchURL: config.openiURL + configSearch.searchURL,
     postAuthOptions: {
         data: {
             "username": configAuth.username,
@@ -44,17 +45,12 @@ module.exports = {
     getAuth: getAuth
 };
 
-function search(query, idsOnly) {
+function search(query, url, idsOnly, previousPageResult) {
     return new Promise(function (resolve, reject) {
         log.verbose(LOG_TAG, 'post the search');
         try {
             var client = new Client();
-            var urlAndQuery = params.searchURL;
-            query[1] = query[1].replace("%26", "%2C"); // ugly and nasty hack todo: correct.
-            urlAndQuery += '?'+ query[1];
-            if (idsOnly) {
-                urlAndQuery += '&id_only=true';
-            }
+            var urlAndQuery = formatQuery(query, url, idsOnly);
             client.get(urlAndQuery, params.getPostSearchOptions(),
                 function (data) {
                     try {
@@ -63,14 +59,21 @@ function search(query, idsOnly) {
                         if (openiData.error && openiData.error === TOKEN_HAS_EXPIRED) {
                             return resolve(TOKEN_HAS_EXPIRED);
                         }
-                        return resolve(openiData);
+                        if (previousPageResult) {
+                            openiData.result = previousPageResult.concat(openiData.result);
+                        }
+                        var nextPage = openiData.meta.next;
+                        log.verbose(LOG_TAG, 'nextPage: ', nextPage);
+                        log.verbose(LOG_TAG, 'total results length: ', openiData.result.length);
+                        if (nextPage !== null) {
+                            return resolve(search(query, nextPage, idsOnly, openiData.result));
+                        } else {
+                            return resolve(openiData);
+                        }
                     } catch(err) {
                         log.error(LOG_TAG, 'getPostSearchOptions: ', err);
-                        reject(err);
+                        return reject(err);
                     }
-                }, function (err) {
-                    log.error(LOG_TAG, 'get error: ', err);
-                    reject("Couldn't connect with OPENi \n" + err);
                 });
         } catch (e) {
             reject(e);
@@ -102,6 +105,27 @@ function getAuthFromOpeni() {
         } catch (e) {
             reject(e);
         }
-
     });
+}
+
+function formatQuery(query, url, idsOnly) {
+    var urlAndQuery = '';
+    if (url === null) {
+        urlAndQuery = params.searchURL + '?offset=0&limit=' + PAGE_LENGTH;
+        if (query[1].indexOf('property_filter=%26') >= 0) {
+            query[1] = query[1].replace("%26", "");
+        }
+        else {
+            query[1] = query[1].replace("%26", "%2C");
+
+        }
+        urlAndQuery += '&'+ query[1];
+        if (idsOnly) {
+            urlAndQuery += '&id_only=true';
+        }
+    } else {
+        urlAndQuery = config.openiURL + url;
+    }
+    log.verbose(LOG_TAG, 'urlAndQuery: ', urlAndQuery);
+    return urlAndQuery;
 }

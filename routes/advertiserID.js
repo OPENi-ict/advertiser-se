@@ -45,12 +45,12 @@ router.post('/', function (req, res) {
 
     getAuth()
         .then(function () {
-            return search(query, idsOnly);
+            return search(query, null, idsOnly);
         })
         .then(function(result) {
             return result !== TOKEN_HAS_EXPIRED ?
                 Promise.resolve(result) :
-                getAuth().then(function () { return search(query, idsOnly); });
+                getAuth().then(function () { return search(query, null, idsOnly); });
         })
         .then(function (openiData) {
             var cloudletIDs = [];
