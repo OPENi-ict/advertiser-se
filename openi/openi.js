@@ -127,3 +127,4 @@ function formatQuery(query, url, idsOnly) {
     log.verbose(LOG_TAG, 'urlAndQuery: ', urlAndQuery);
     return urlAndQuery;
 }
+

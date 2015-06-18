@@ -1,5 +1,7 @@
 module.exports = {
-    postObjectToCloudlets: postObjectToCloudlets
+    postObjectToCloudlets: postObjectToCloudlets,
+    objectSearch: objectSearch,
+    reverseOptOut: reverseOptOut
 };
 
 var log = require('npmlog');
@@ -119,6 +121,91 @@ function getAuthPostFromOpeni() {
             return Promise.resolve(params.authPost);
         });
 }
+
+//function objectSearch(personalization_opt_out, page, prevPage) {
+//    return getDeveloperSession()
+//        .then(function (token) {
+//            console.log('token: ', token);
+//            return new Promise(function (resolve, reject) {
+//                var url = !page ?
+//                    'https://demo2.openi-ict.eu:443/api/v1/objects?&order=ascending&offset=0&limit=30&property_filter=personalization_opt_out=' +
+//                    personalization_opt_out :
+//                    'https://demo2.openi-ict.eu:443' + page;
+//                console.log('url: ', url);
+//                var options = {
+//                    headers: {
+//                        "Content-Type": "application/json",
+//                        "Authorization": params.authSession
+//                    }
+//                };
+//                var client = new Client();
+//                client.get(url, options, function (data) {
+//                    try {
+//                        var dataStr = data.toString(ENCODING);
+//                        var openiData = JSON.parse(dataStr);
+//                        if (prevPage) {
+//                            openiData.result = prevPage.concat(openiData.result);
+//                        }
+//                        console.log('next: ', openiData.meta.next);
+//                        var next = openiData.meta.next;
+//                        return next !== null
+//                            ? resolve(objectSearch(personalization_opt_out, next, openiData.result))
+//                            : resolve(openiData);
+//                    } catch(err) {
+//                        log.error(LOG_TAG, 'getPostSearchOptions: ', err);
+//                        return reject(err);
+//                    }
+//                });
+//            });
+//        });
+//}
+//
+//function reverseOptOut(records, limit) {
+//    records.length = limit;
+//    var requests = [];
+//    records.forEach(function (item, index) {
+//        console.log('index: ', index);
+//        if (index >= limit) return;
+//        var req = new Promise(function (resolve, reject) {
+//            var data = item['@data'];
+//            if (!data.personalization_opt_out) resolve();
+//            data.personalization_opt_out = data.personalization_opt_out === 'yes' ? 'no' : 'yes';
+//            var url = 'https://demo2.openi-ict.eu:443/api/v1/objects/' + item['@cloudlet'] + '/' + item['@id'];
+//            var options = {
+//                headers: {
+//                    "Content-Type": "application/json",
+//                    "Authorization": params.authSession
+//                },
+//                data: {
+//                    "@id": item['@id'],
+//                    "@location": item['@location'],
+//                    "@cloudlet": item['@cloudlet'],
+//                    "@openi_type": item['@openi_type'],
+//                    "@data": data,
+//                    "_date_created": item['_date_created'],
+//                    "_date_modified": '2015-06-16T11:02:39.774Z',
+//                    "_revision": item['_revision']
+//                }
+//            };
+//            log.verbose(LOG_TAG, 'url: ', url);
+//            console.log(LOG_TAG, 'options.data: ', options.data);
+//            var client = new Client();
+//            client.put(url, options, function (result) {
+//                try {
+//                    var resultStr = result.toString(ENCODING);
+//                    var result = JSON.parse(resultStr);
+//                    return resolve(result);
+//                } catch(err) {
+//                    return reject(err);
+//                }
+//            }, function (err) {
+//                reject(err);
+//            });
+//        });
+//        requests.push(req);
+//    });
+//    return Promise.all(requests);
+//}
 
 //function deleteContexts() {
 //    return getAuthPost()
