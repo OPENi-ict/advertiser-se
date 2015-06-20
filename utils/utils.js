@@ -33,13 +33,14 @@ function decodeReq(reqBody) {
                         jsonToQuery = jsonToQuery + obj + "=" + encodeURIComponent(audMngArray[obj]);
                     }
                 } else if (typeof audMngArray[obj] === "object") {
-                    jsonToQuery = jsonToQuery + "&" + mutlipleValuesQuery(obj, audMngArray[obj]);
+                    jsonToQuery = jsonToQuery + "," + mutlipleValuesQuery(obj, audMngArray[obj]);
                 } else {
-                    jsonToQuery = jsonToQuery + "&" + obj + "=" + encodeURIComponent(audMngArray[obj]);
+                    jsonToQuery = jsonToQuery + "," + obj + "=" + encodeURIComponent(audMngArray[obj]);
                 }
             }
         }
-        return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery + '&personalization_opt_out=no')];
+        var optOut = jsonToQuery === '' ? 'personalization_opt_out=no' : ',personalization_opt_out=no'
+        return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery + optOut)];
     } catch (e) {
         // An error has occured, handle it, by e.g. logging it
         log.error(LOG_TAG, e);

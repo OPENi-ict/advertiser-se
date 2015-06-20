@@ -16,7 +16,7 @@ function getUnixTimeSeconds() {
     var now = new Date()
         .getTime()
         .toString()
-        .substring(0, now.length - 3);
+    now = now.substring(0, now.length - 3);
     return now;
 }
 
