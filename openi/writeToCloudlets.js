@@ -47,30 +47,32 @@ function getDeveloperSession() {
     });
 }
 
-function getDeveloperAuth(token) {
-    return new Promise(function (resolve) {
-        log.verbose(LOG_TAG, 'getDeveloperAuth()');
-        var url = config.post.authURL;
-        var options = {
-            data: {
-                "username": configPost.username,
-                "password": configPost.password,
-                "api_key": configPost.api_key,
-                "secret": configPost.secret
-            },
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token.session
-            }
-        };
-        log.verbose(LOG_TAG, 'conf: ', options.data);
-        var client = new Client();
-        client.post(url, options, function (result) {
-            var result = JSON.parse(result.toString(ENCODING));
-            log.verbose(LOG_TAG, 'develop auth: ', result);
-            resolve(result);
+function getDeveloperAuth(username, password, apiKey, secret) {
+    return function (token) {
+        return new Promise(function (resolve) {
+            log.verbose(LOG_TAG, 'getDeveloperAuth()');
+            var url = config.post.authURL;
+            var options = {
+                data: {
+                    "username": username,
+                    "password": password,
+                    "api_key": apiKey,
+                    "secret": secret
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": token.session
+                }
+            };
+            log.verbose(LOG_TAG, 'conf: ', options.data);
+            var client = new Client();
+            client.post(url, options, function (result) {
+                var result = JSON.parse(result.toString(ENCODING));
+                log.verbose(LOG_TAG, 'develop auth: ', result);
+                resolve(result);
+            });
         });
-    });
+    };
 }
 
 function postObjectToCloudlets(cloudletIDs, obj) {
@@ -115,7 +117,7 @@ function getAuthPost() {
 function getAuthPostFromOpeni() {
     log.verbose(LOG_TAG, 'getAuthPostFromOpeni()');
     return getDeveloperSession()
-        .then(getDeveloperAuth)
+        .then(getDeveloperAuth(configPost.username, configPost.password, configPost.api_key, configPost.secret ))
         .then(function (result) {
             params.authPost = result.session;
             return Promise.resolve(params.authPost);
