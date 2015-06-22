@@ -44,6 +44,8 @@ router.post('/', function (req, res) {
 
     var campaignID = req.body.campain.id;
     var campaignName = req.body.campain.name;
+    var campaignBannerA = req.body.campain.bannerUrlA || '';
+    var campaignBannerB = req.body.campain.bannerUrlB || '';
 
     getAuth()
         .then(function () {
@@ -61,7 +63,8 @@ router.post('/', function (req, res) {
                 cloudletIDs.push(cloudletID);
             });
             // todo
-            var advertisementMarker = createAdvertisementMarker(campaignID, campaignName);
+            var advertisementMarker = createAdvertisementMarker(campaignID, campaignName, campaignBannerA,
+                    campaignBannerB);
             openi.postObjectToCloudlets(cloudletIDs, advertisementMarker);
             console.log('****** cloudletIDs: ', cloudletIDs);
             console.log('****** cloudletIDs.length: ', cloudletIDs.length);
