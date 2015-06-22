@@ -40,6 +40,8 @@ router.post('/', function (req, res) {
 
     var idsOnly = true;
 
+    log.verbose(LOG_TAG, 'req body: ', req.body);
+
     var campaignID = req.body.campain.id;
     var campaignName = req.body.campain.name;
 
