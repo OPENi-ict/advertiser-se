@@ -110,6 +110,9 @@ function formatQuery(query, url, idsOnly) {
     var urlAndQuery = '';
     if (url === null) {
         urlAndQuery = params.searchURL + '?offset=0&limit=' + PAGE_LENGTH;
+        if (query[1].indexOf('property_filter=%2C') >= 0) {
+            query[1] = query[1].replace("%2C", "");
+        }
         if (query[1].indexOf('property_filter=%26') >= 0) {
             query[1] = query[1].replace("%26", "");
         }
@@ -124,6 +127,7 @@ function formatQuery(query, url, idsOnly) {
     } else {
         urlAndQuery = config.openiURL + url;
     }
+    //urlAndQuery = urlAndQuery.replace('6personalization_opt_out', 'Cpersonalization_opt_out');
     log.verbose(LOG_TAG, 'urlAndQuery: ', urlAndQuery);
     return urlAndQuery;
 }
