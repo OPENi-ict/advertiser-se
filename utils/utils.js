@@ -5,16 +5,19 @@ module.exports = {
 
 function mutlipleValuesQuery(name, values) {
     "use strict";
-    var tmpStr = "",
-        i;
-    for (i = 0; i < values.length; i++) {
-        if (i === 0) {
-            tmpStr = tmpStr + name + "=" + encodeURIComponent(values[i]);
-        } else {
-            tmpStr = tmpStr + "||" + encodeURIComponent(values[i]);
-        }
-    }
-    return tmpStr;
+
+    var query = '';
+
+    values.forEach(function (value, index) {
+
+        query = index === 0 ?
+                query + name + "=" + encodeURIComponent(value) :
+                query + "||" + encodeURIComponent(value);
+
+    });
+
+    return query;
+
 }
 
 function decodeReq(reqBody) {
