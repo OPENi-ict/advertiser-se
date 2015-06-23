@@ -11,8 +11,8 @@ function mutlipleValuesQuery(name, values) {
     values.forEach(function (value, index) {
 
         query = index === 0 ?
-                query + name + "=" + encodeURIComponent(value) :
-                query + "||" + encodeURIComponent(value);
+                query + name + '=' + encodeURIComponent(value) :
+                query + '||' + encodeURIComponent(value);
 
     });
 
@@ -25,29 +25,29 @@ function decodeReq(reqBody) {
     try {
         var req_json = reqBody,
             audMngArray = req_json.audMng,
-            jsonToQuery = "",
+            jsonToQuery = '',
             obj;
         for (obj in audMngArray) {
             if (audMngArray.hasOwnProperty(obj)) {
-                if (jsonToQuery === "") {
-                    if (typeof audMngArray[obj] === "object") {
+                if (jsonToQuery === '') {
+                    if (typeof audMngArray[obj] === 'object') {
                         jsonToQuery = jsonToQuery + mutlipleValuesQuery(obj, audMngArray[obj]);
                     } else {
-                        jsonToQuery = jsonToQuery + obj + "=" + encodeURIComponent(audMngArray[obj]);
+                        jsonToQuery = jsonToQuery + obj + '=' + encodeURIComponent(audMngArray[obj]);
                     }
-                } else if (typeof audMngArray[obj] === "object") {
-                    jsonToQuery = jsonToQuery + "," + mutlipleValuesQuery(obj, audMngArray[obj]);
+                } else if (typeof audMngArray[obj] === 'object') {
+                    jsonToQuery = jsonToQuery + ',' + mutlipleValuesQuery(obj, audMngArray[obj]);
                 } else {
-                    jsonToQuery = jsonToQuery + "," + obj + "=" + encodeURIComponent(audMngArray[obj]);
+                    jsonToQuery = jsonToQuery + ',' + obj + '=' + encodeURIComponent(audMngArray[obj]);
                 }
             }
         }
         var optOut = jsonToQuery === '' ? 'personalization_opt_out=no' : ',personalization_opt_out=no'
-        return ["OK", "property_filter=" + encodeURIComponent(jsonToQuery + optOut)];
+        return ['OK', 'property_filter=' + encodeURIComponent(jsonToQuery + optOut)];
     } catch (e) {
         // An error has occured, handle it, by e.g. logging it
         log.error(LOG_TAG, e);
-        return ["Error", e];
+        return ['Error', e];
         // send resp
     }
 }
