@@ -11,7 +11,7 @@ function mutlipleValuesQuery(name, values) {
         if (i === 0) {
             tmpStr = tmpStr + name + "=" + encodeURIComponent(values[i]);
         } else {
-            tmpStr = tmpStr + "," + name + "=" + encodeURIComponent(values[i]);
+            tmpStr = tmpStr + "||" + encodeURIComponent(values[i]);
         }
     }
     return tmpStr;
